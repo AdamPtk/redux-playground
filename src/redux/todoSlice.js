@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
-const getTodosAsync = createAsyncThunk(
+export const getTodosAsync = createAsyncThunk(
   'todos/getTodosAsync',
   async () => {
     const response = await fetch('http://localhost:7000/todos');
@@ -8,7 +8,25 @@ const getTodosAsync = createAsyncThunk(
       const todos = await response.json();
       return { todos }
     }
-  })
+  }
+);
+
+export const addTodoAsync = createAsyncThunk(
+  'todos/getTodosAsync',
+  async (payload) => {
+    const response = await fetch('http://localhost:7000/todos', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({title: payload.title})
+    });
+    if(response.ok) {
+      const todo = await response.json();
+      return { todo }
+    }
+  }
+);
 
 const todoSlice = createSlice({
   name: 'todos',
@@ -47,8 +65,15 @@ const todoSlice = createSlice({
     }
   },
   extraReducers: {
+    [getTodosAsync.pending]: (state, action) => {
+      console.log('fetching data...')
+    },
     [getTodosAsync.fulfilled]: (state, action) => {
+      console.log('fetched data successfully')
       return action.payload.todos
+    },
+    [addTodoAsync.fulfilled]: (state, action) => {
+      state.push(action.payload.todo);
     }
   }
 });
